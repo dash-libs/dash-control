@@ -1,0 +1,45 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "dash-control"
+dynamic = ["version"]
+description = "Databricks Control Center — live system-table dashboard for platform, governance, cost, users, jobs, and queries"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "Apache-2.0" }
+authors = [{ name = "Darshan Shah", email = "darshan.innovation@gmail.com" }]
+keywords = [
+  "databricks", "control-center", "dashboard", "system-tables",
+  "cost", "governance", "observability", "unity-catalog",
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Science/Research",
+  "Intended Audience :: Information Technology",
+  "Intended Audience :: End Users/Desktop",
+  "License :: OSI Approved :: Apache Software License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+]
+dependencies = ["ipywidgets>=8.0", "dash-uis>=0.1.0"]
+
+[project.optional-dependencies]
+dev = ["pytest", "pytest-cov", "hatch", "pdoc", "ruff"]
+
+[project.urls]
+Homepage = "https://github.com/dash-libs/dash-control"
+
+[tool.hatch.version]
+path = "dashcontrol/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["dashcontrol"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
