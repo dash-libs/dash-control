@@ -6,7 +6,6 @@ or pre-wire a domain-specific dashboard by passing a config object.
 """
 from __future__ import annotations
 from dataclasses import dataclass, field
-from typing import Optional
 
 ALL_PANELS = ["health", "cost", "users", "catalog", "jobs", "queries", "governance"]
 
