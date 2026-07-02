@@ -7,6 +7,24 @@ One call gives you a fully-tabbed dashboard across:
 from __future__ import annotations
 from dashcontrol.config import ControlCenterConfig
 
+_LIBRARY = "dashcontrol"
+
+
+def env_setup() -> None:
+    """Open the environment setup panel — where should dashcontrol read/write
+    its configs? Defaults to the notebook's current working directory if
+    never called."""
+    try:
+        import dashui
+        from IPython.display import display
+    except ImportError:
+        raise RuntimeError("ipywidgets required. Run: %pip install ipywidgets") from None
+
+    display(dashui.card([
+        dashui.header("Databricks Control Center — Environment Setup", library=_LIBRARY),
+        dashui.env_setup_panel(_LIBRARY).widget,
+    ]))
+
 
 def launch(config: ControlCenterConfig = None):
     try:
@@ -23,6 +41,12 @@ def launch(config: ControlCenterConfig = None):
         section_header, sparkline_html, format_number, _TEAL, _RED, _AMBER, _GREEN,
     )
 
+    if config is None:
+        saved = dashui.load_config(_LIBRARY)
+        if saved:
+            from dashcontrol.config import CustomPanel
+            saved["custom_panels"] = [CustomPanel(**p) for p in saved.get("custom_panels", [])]
+            config = ControlCenterConfig(**saved)
     cfg = config or ControlCenterConfig()
 
     # ── Global controls ───────────────────────────────────────────────────────
@@ -54,6 +78,16 @@ def launch(config: ControlCenterConfig = None):
         return f"AND table_catalog IN ({quoted})"
 
     # ── Panel builder helper ──────────────────────────────────────────────────
+    def _save_state() -> None:
+        try:
+            from dataclasses import asdict
+            state = asdict(cfg)
+            state["date_range_days"] = days_slider.value
+            state["catalogs"] = [c.strip() for c in catalog_text.value.split(",") if c.strip()]
+            dashui.save_config(_LIBRARY, state)
+        except Exception:
+            pass  # persistence is a convenience, never block the actual operation on it
+
     def _panel(sections_fn) -> tuple:
         """Create a (load_btn, output) pair and wire the click."""
         out = dashui.output_panel()
@@ -62,6 +96,7 @@ def launch(config: ControlCenterConfig = None):
         def _on_click(b):
             btn.disabled = True
             btn.description = "Loading…"
+            _save_state()
             with out:
                 out.clear_output()
                 try:
@@ -420,13 +455,13 @@ def launch(config: ControlCenterConfig = None):
 
     # ── Assemble tabs ─────────────────────────────────────────────────────────
     panel_map = {
-        "health":     ("🏥 Health",     w.VBox([health_btn, health_out])),
-        "cost":       ("💰 Cost",       w.VBox([cost_btn, cost_out])),
-        "users":      ("👥 Users",      w.VBox([users_btn, users_out])),
-        "catalog":    ("📦 Catalog",    w.VBox([catalog_btn, catalog_out])),
-        "jobs":       ("⚙️ Jobs",       w.VBox([jobs_btn, jobs_out])),
-        "queries":    ("🔍 Queries",    w.VBox([queries_btn, queries_out])),
-        "governance": ("🛡️ Governance", w.VBox([gov_btn, gov_out])),
+        "health":     ("Health",     w.VBox([health_btn, health_out])),
+        "cost":       ("Cost",       w.VBox([cost_btn, cost_out])),
+        "users":      ("Users",      w.VBox([users_btn, users_out])),
+        "catalog":    ("Catalog",    w.VBox([catalog_btn, catalog_out])),
+        "jobs":       ("Jobs",       w.VBox([jobs_btn, jobs_out])),
+        "queries":    ("Queries",    w.VBox([queries_btn, queries_out])),
+        "governance": ("Governance", w.VBox([gov_btn, gov_out])),
     }
 
     tab = w.Tab()
@@ -442,17 +477,22 @@ def launch(config: ControlCenterConfig = None):
         _config_custom_widgets + [custom_title, custom_sql, custom_btn, custom_out]
     )
     children.append(custom_content)
-    titles.append("➕ Custom")
+    titles.append("Custom")
 
     tab.children = children
     for i, t in enumerate(titles):
         tab.set_title(i, t)
+
+    env_accordion = w.Accordion(children=[dashui.env_setup_panel(_LIBRARY).widget])
+    env_accordion.set_title(0, "Environment setup")
+    env_accordion.selected_index = None
 
     ui = dashui.card([
         dashui.header(
             f"Databricks Control Center{' — ' + cfg.workspace_name if cfg.workspace_name else ''}",
             library="dashcontrol",
         ),
+        env_accordion,
         dashui.html(
             "<div style='font-size:11px;color:#6b7280;margin-bottom:4px'>"
             "Click a tab then <b>Load</b> to query system tables. "
