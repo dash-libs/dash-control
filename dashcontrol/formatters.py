@@ -77,7 +77,7 @@ def html_table(
         if highlight_col and highlight_col in row:
             v = row[highlight_col]
             if isinstance(v, str) and any(k in v.upper() for k in ("FAIL", "ERROR", "DENIED")):
-                return f"background:#FEF2F2;"
+                return "background:#FEF2F2;"
         return ""
 
     headers = "".join(_header(c) for c in cols)

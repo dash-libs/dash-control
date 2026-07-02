@@ -24,7 +24,6 @@ def launch(config: ControlCenterConfig = None):
     )
 
     cfg = config or ControlCenterConfig()
-    cat_filter = cfg.catalog_filter()
 
     # ── Global controls ───────────────────────────────────────────────────────
     days_slider = w.IntSlider(
