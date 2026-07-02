@@ -57,7 +57,7 @@ def launch(config: ControlCenterConfig = None):
     def _panel(sections_fn) -> tuple:
         """Create a (load_btn, output) pair and wire the click."""
         out = dashui.output_panel()
-        btn = dashui.action_button("Load", style="info", emoji="▶")
+        btn = dashui.action_button("Load", style="info")
 
         def _on_click(b):
             btn.disabled = True
@@ -378,14 +378,14 @@ def launch(config: ControlCenterConfig = None):
         placeholder="SELECT * FROM system.access.audit LIMIT 20",
         layout=w.Layout(width="100%", height="100px"),
     )
-    custom_btn = dashui.action_button("Run Custom Query", style="warning", emoji="⚡")
+    custom_btn = dashui.action_button("Run Custom Query", style="warning")
     custom_out = dashui.output_panel()
 
     # Pre-wire any custom panels from config
     _config_custom_widgets = []
     for cp in cfg.custom_panels:
         cp_out = dashui.output_panel()
-        cp_btn = dashui.action_button(f"Load: {cp.title}", style="info", emoji="▶")
+        cp_btn = dashui.action_button(f"Load: {cp.title}", style="info")
         _sql_closure = cp.sql
 
         def _make_handler(s, o):
@@ -452,7 +452,6 @@ def launch(config: ControlCenterConfig = None):
         dashui.header(
             f"Databricks Control Center{' — ' + cfg.workspace_name if cfg.workspace_name else ''}",
             library="dashcontrol",
-            emoji="🎛️",
         ),
         dashui.html(
             "<div style='font-size:11px;color:#6b7280;margin-bottom:4px'>"
