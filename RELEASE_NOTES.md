@@ -1,7 +1,7 @@
-## DashControl v0.1.2
+## DashControl v0.1.3
 
-**Released:** 2026-07-06
-**Previous:** v0.1.1
+**Released:** 2026-07-13
+**Previous:** v0.1.2
 
 
 
@@ -12,12 +12,12 @@
 
 ### Install
 ```bash
-pip install dash-control==0.1.2
+pip install dash-control==0.1.3
 ```
 
 ### Quick Start (Databricks notebook)
 ```python
-%pip install dash-control==0.1.2
+%pip install dash-control==0.1.3
 import dashcontrol
 dashcontrol.launch()
 ```
