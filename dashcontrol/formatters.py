@@ -7,14 +7,17 @@ stat tiles, trend sparklines, and CSV exports for the Control Center UI.
 from __future__ import annotations
 from typing import Optional
 
-# Colour palette
-_TEAL   = "#2A9D90"
-_AMBER  = "#F4A261"
-_RED    = "#E63946"
-_GREEN  = "#2DC653"
-_GREY   = "#6B7280"
-_LIGHT  = "#F9FAFB"
-_BORDER = "#E5E7EB"
+from dashui import theme
+
+# Colour palette — dashui's shared design tokens, not a private one-off
+# palette, so Control Center matches the rest of the suite.
+_TEAL   = theme.INFO
+_AMBER  = theme.WARNING
+_RED    = theme.DANGER
+_GREEN  = theme.SUCCESS
+_GREY   = theme.MUTED_FOREGROUND
+_LIGHT  = theme.MUTED
+_BORDER = theme.BORDER
 
 
 def stat_tile(label: str, value, color: str = _TEAL, unit: str = "") -> str:
@@ -49,7 +52,7 @@ def html_table(
                     (high numeric value = amber, error strings = red)
     """
     if not rows:
-        return "<div style='color:#9ca3af;font-size:12px;padding:8px'>No data</div>"
+        return f"<div style='color:{_GREY};font-size:12px;padding:8px'>No data</div>"
 
     cols = list(rows[0].keys())
     col_widths = col_widths or {}
@@ -58,7 +61,7 @@ def html_table(
         w = f"min-width:{col_widths[col]};" if col in col_widths else ""
         label = col.replace("_", " ").title()
         return (
-            f"<th style='padding:6px 10px;background:#F3F4F6;text-align:left;"
+            f"<th style='padding:6px 10px;background:{_LIGHT};text-align:left;"
             f"font-size:11px;color:{_GREY};font-weight:600;white-space:nowrap;{w}'>"
             f"{label}</th>"
         )
@@ -69,7 +72,7 @@ def html_table(
         display = text[:80] + "…" if len(text) > 80 else text
         return (
             f"<td style='padding:5px 10px;font-size:12px;"
-            f"font-family:monospace;border-top:1px solid {_BORDER}'>"
+            f"font-family:{theme.FONT_MONO};border-top:1px solid {_BORDER}'>"
             f"{display}</td>"
         )
 
@@ -77,7 +80,7 @@ def html_table(
         if highlight_col and highlight_col in row:
             v = row[highlight_col]
             if isinstance(v, str) and any(k in v.upper() for k in ("FAIL", "ERROR", "DENIED")):
-                return "background:#FEF2F2;"
+                return f"background:{theme.ACCENT_BG};"
         return ""
 
     headers = "".join(_header(c) for c in cols)
@@ -105,27 +108,28 @@ def html_table(
 
 
 def error_box(message: str) -> str:
-    """Red alert box for query errors."""
+    """Alert box for query errors — a colored left border carries the
+    status, no glyph prefix (matches status_line()'s convention)."""
     return (
-        f"<div style='padding:10px 14px;background:#FEF2F2;border:1px solid #FCA5A5;"
-        f"border-radius:6px;color:{_RED};font-size:12px;font-family:monospace'>"
-        f"⚠ {message}</div>"
+        f"<div style='padding:10px 14px;background:{theme.ACCENT_BG};"
+        f"border:1px solid {_BORDER};border-left:3px solid {_RED};border-radius:{theme.RADIUS_MD};"
+        f"color:{_RED};font-size:12px;font-family:{theme.FONT_MONO}'>{message}</div>"
     )
 
 
 def info_box(message: str) -> str:
-    """Blue info box."""
+    """Informational box — a colored left border carries the status."""
     return (
-        f"<div style='padding:10px 14px;background:#EFF6FF;border:1px solid #BFDBFE;"
-        f"border-radius:6px;color:#1D4ED8;font-size:12px'>"
-        f"ℹ {message}</div>"
+        f"<div style='padding:10px 14px;background:{_LIGHT};"
+        f"border:1px solid {_BORDER};border-left:3px solid {_TEAL};border-radius:{theme.RADIUS_MD};"
+        f"color:{theme.FOREGROUND};font-size:12px'>{message}</div>"
     )
 
 
 def section_header(title: str, subtitle: str = "") -> str:
     sub = f"<span style='font-size:11px;color:{_GREY};margin-left:8px'>{subtitle}</span>" if subtitle else ""
     return (
-        f"<div style='font-weight:600;font-size:13px;color:#374151;"
+        f"<div style='font-weight:600;font-size:13px;color:{theme.FOREGROUND};"
         f"margin:12px 0 6px;padding-bottom:4px;border-bottom:1px solid {_BORDER}'>"
         f"{title}{sub}</div>"
     )
@@ -138,12 +142,12 @@ def sparkline_html(values: list[float], label: str = "") -> str:
     """
     blocks = "▁▂▃▄▅▆▇█"
     if not values or all(v == 0 for v in values):
-        return f"<span style='font-family:monospace;color:{_GREY}'>{'▁' * 10}</span>"
+        return f"<span style='font-family:{theme.FONT_MONO};color:{_GREY}'>{'▁' * 10}</span>"
     mn, mx = min(values), max(values)
     rng = mx - mn or 1
     chars = "".join(blocks[min(7, int((v - mn) / rng * 7))] for v in values)
     return (
-        f"<span style='font-family:monospace;font-size:14px;color:{_TEAL}'>{chars}</span>"
+        f"<span style='font-family:{theme.FONT_MONO};font-size:14px;color:{_TEAL}'>{chars}</span>"
         + (f"<span style='font-size:10px;color:{_GREY};margin-left:4px'>{label}</span>" if label else "")
     )
 
