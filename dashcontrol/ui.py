@@ -62,9 +62,11 @@ def launch(config: ControlCenterConfig = None):
         style={"description_width": "70px"},
         layout=w.Layout(width="360px"),
     )
+    _ctx = dashui.databricks_context()
+    _detected_workspace = _ctx.workspace_url.replace("https://", "") if _ctx.workspace_url else ""
     workspace_label = w.HTML(
         value=f"<div style='font-size:11px;color:#6b7280;padding:4px 0'>"
-              f"Workspace: <b>{cfg.workspace_name or 'auto-detected'}</b></div>"
+              f"Workspace: <b>{cfg.workspace_name or _detected_workspace or 'not detected'}</b></div>"
     )
 
     def _days() -> int:
@@ -94,8 +96,8 @@ def launch(config: ControlCenterConfig = None):
         btn = dashui.action_button("Load", style="info")
 
         def _on_click(b):
-            btn.disabled = True
-            btn.description = "Loading…"
+            btn.set_disabled(True)
+            btn.set_label("Loading…")
             _save_state()
             with out:
                 out.clear_output()
@@ -105,8 +107,8 @@ def launch(config: ControlCenterConfig = None):
                     import ipywidgets as _w
                     from IPython.display import display as _d
                     _d(_w.HTML(error_box(str(e))))
-            btn.disabled = False
-            btn.description = "Refresh"
+            btn.set_disabled(False)
+            btn.set_label("Refresh")
 
         btn.on_click(_on_click)
         return btn, out

@@ -83,8 +83,9 @@ def test_error_box_contains_message():
 
 
 def test_error_box_has_warning_color():
+    from dashui.theme import DANGER
     h = error_box("err")
-    assert "#FEF2F2" in h or "red" in h.lower() or "#E63946" in h
+    assert DANGER in h
 
 
 # ── info_box ──────────────────────────────────────────────────────────────────
